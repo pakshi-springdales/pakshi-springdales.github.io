@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Pakshi's Springdales Senior Secondary School - The Growing School of Bengaluru</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -17,6 +19,16 @@
             line-height: 1.6;
             color: #333;
             background: #fff;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            position: relative;
+        }
+
+        body.modal-open {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
         }
 
         /* Logo Section */
@@ -172,6 +184,8 @@
             overflow: hidden;
             background: #1a5490;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            touch-action: pan-y pinch-zoom;
+            -webkit-overflow-scrolling: touch;
         }
 
         .carousel {
@@ -180,6 +194,8 @@
             height: 600px;
             display: flex;
             transition: transform 0.8s ease-in-out;
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
         }
 
         .carousel-slide {
@@ -800,14 +816,19 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 10000;
+            z-index: 99999;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
+            height: 100vh;
+            height: -webkit-fill-available;
             overflow: auto;
+            -webkit-overflow-scrolling: touch;
             background-color: rgba(0,0,0,0.6);
             animation: fadeIn 0.3s;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
         }
 
         @keyframes fadeIn {
@@ -837,7 +858,12 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             animation: slideDown 0.3s;
             max-height: 85vh;
+            max-height: calc(100vh - 100px);
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
         }
 
         .modal-header {
@@ -1050,9 +1076,29 @@
                 font-size: 32px;
             }
 
+            .modal {
+                padding: 10px;
+            }
+
             .modal-content {
                 width: 95%;
-                margin: 10% auto;
+                margin: 10% auto 5% auto;
+                max-height: 80vh;
+                max-height: calc(100vh - 80px);
+            }
+
+            .modal-header {
+                padding: 20px;
+            }
+
+            .modal-header h2 {
+                font-size: 20px;
+            }
+
+            .modal-close {
+                width: 35px;
+                height: 35px;
+                font-size: 28px;
             }
 
             .modal-header h2 {
@@ -1629,34 +1675,62 @@
         });
 
         // Touch/swipe support for mobile
+        // Touch/swipe support for mobile - improved for iOS Safari
         let startX = 0;
+        let startY = 0;
         let isDragging = false;
+        let isVerticalScroll = false;
 
         carousel.addEventListener('touchstart', (e) => {
             startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
             isDragging = true;
-        });
+            isVerticalScroll = false;
+        }, { passive: true });
 
         carousel.addEventListener('touchmove', (e) => {
             if (!isDragging) return;
-            e.preventDefault();
-        });
+            
+            const currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const diffX = Math.abs(currentX - startX);
+            const diffY = Math.abs(currentY - startY);
+            
+            // Determine if user is scrolling vertically or horizontally
+            if (diffY > diffX && diffY > 10) {
+                isVerticalScroll = true;
+                // Allow vertical scrolling - don't prevent default
+                return;
+            }
+            
+            // If horizontal swipe, prevent default to allow carousel navigation
+            if (diffX > diffY && diffX > 10) {
+                isVerticalScroll = false;
+                e.preventDefault();
+            }
+        }, { passive: false });
 
         carousel.addEventListener('touchend', (e) => {
-            if (!isDragging) return;
+            if (!isDragging || isVerticalScroll) {
+                isDragging = false;
+                isVerticalScroll = false;
+                return;
+            }
+            
             const endX = e.changedTouches[0].clientX;
             const diff = startX - endX;
             
             if (Math.abs(diff) > 50) {
                 if (diff > 0) {
-                    moveCarousel(1);
+                    moveCarousel(1); // Swipe left - next
                 } else {
-                    moveCarousel(-1);
+                    moveCarousel(-1); // Swipe right - previous
                 }
             }
             
             isDragging = false;
-        });
+            isVerticalScroll = false;
+        }, { passive: true });
 
         // Initialize
         updateCarousel();
@@ -1806,22 +1880,59 @@
             
             document.getElementById('modalTitle').textContent = content.title;
             document.getElementById('modalBody').innerHTML = content.body;
+            
+            // Show modal with proper iOS Safari support
             modal.style.display = 'block';
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
+            
+            // Prevent body scroll on iOS Safari - improved method
+            const scrollY = window.scrollY;
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${scrollY}px`;
+            document.body.style.width = '100%';
             document.body.style.overflow = 'hidden';
+            document.body.classList.add('modal-open');
+            
+            // Store scroll position for restoration
+            modal.dataset.scrollY = scrollY;
+            
+            // Force repaint for iOS
+            void modal.offsetHeight;
+            
+            // Focus on modal for accessibility
+            modal.setAttribute('tabindex', '-1');
+            modal.focus();
         }
 
         function closeModal() {
-            document.getElementById('infoModal').style.display = 'none';
-            document.body.style.overflow = 'auto';
+            const modal = document.getElementById('infoModal');
+            modal.style.display = 'none';
+            modal.style.visibility = 'hidden';
+            modal.style.opacity = '0';
+            
+            // Restore body scroll on iOS Safari - improved method
+            const scrollY = modal.dataset.scrollY || 0;
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            document.body.style.overflow = '';
+            document.body.classList.remove('modal-open');
+            
+            // Restore scroll position
+            if (scrollY) {
+                window.scrollTo(0, parseInt(scrollY));
+            }
+            
+            modal.removeAttribute('tabindex');
         }
 
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('infoModal');
-            if (event.target == modal) {
+        // Close modal when clicking outside - improved for touch devices
+        document.getElementById('infoModal').addEventListener('click', function(event) {
+            if (event.target === this) {
                 closeModal();
             }
-        }
+        }, true);
 
         // Close modal with Escape key
         document.addEventListener('keydown', function(event) {
