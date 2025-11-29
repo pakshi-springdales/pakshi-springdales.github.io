@@ -814,10 +814,24 @@
         }
 
         /* Custom Modal Styles - Bootstrap compatible */
+        .custom-modal {
+            z-index: 999999 !important;
+        }
+
+        .custom-modal.show {
+            display: block !important;
+            opacity: 1 !important;
+        }
+
+        .custom-modal .modal-dialog {
+            z-index: 999999;
+        }
+
         .custom-modal .modal-content {
             border-radius: 15px;
             border: none;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            z-index: 999999;
         }
 
         .custom-modal .modal-header {
@@ -837,11 +851,29 @@
             height: 40px;
             padding: 0;
             margin: 0;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         .custom-modal .modal-header .btn-close:hover {
             background-color: rgba(255,255,255,0.3);
             opacity: 1;
+        }
+
+        .custom-modal .modal-header .btn-close:active {
+            background-color: rgba(255,255,255,0.4);
+        }
+
+        /* Fallback modal backdrop */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1040;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0,0,0,0.5);
         }
 
         .custom-modal .modal-body {
@@ -1198,7 +1230,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h2 class="modal-title" id="modalTitle">Information</h2>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" onclick="closeModal()" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="modalBody">
                     <!-- Content will be inserted here -->
@@ -1968,9 +2000,12 @@
         }
 
         function openModal(id) {
-            // Initialize modal if not already done
-            if (!infoModal) {
-                initModal();
+            console.log('openModal called with id:', id);
+            
+            const modalElement = document.getElementById('infoModal');
+            if (!modalElement) {
+                console.error('Modal element not found!');
+                return;
             }
             
             // Handle custom modal (for read more, download links)
@@ -1980,38 +2015,98 @@
                     body: '<p>Information about ' + id.replace(/-/g, ' ') + ' will be available soon.</p>'
                 };
                 
-                document.getElementById('modalTitle').textContent = content.title;
-                document.getElementById('modalBody').innerHTML = content.body;
+                const titleEl = document.getElementById('modalTitle');
+                const bodyEl = document.getElementById('modalBody');
+                if (titleEl) titleEl.textContent = content.title;
+                if (bodyEl) bodyEl.innerHTML = content.body;
             }
             
-            // Show Bootstrap modal
-            if (infoModal) {
-                infoModal.show();
-            } else {
-                // Fallback: create new modal instance
-                const modalElement = document.getElementById('infoModal');
-                if (modalElement && typeof bootstrap !== 'undefined') {
-                    infoModal = new bootstrap.Modal(modalElement);
+            // Try Bootstrap first
+            if (typeof bootstrap !== 'undefined') {
+                try {
+                    // Initialize if not already done
+                    if (!infoModal) {
+                        infoModal = new bootstrap.Modal(modalElement, {
+                            backdrop: true,
+                            keyboard: true,
+                            focus: true
+                        });
+                    }
                     infoModal.show();
-                } else {
-                    // Ultimate fallback - direct show
-                    modalElement.classList.add('show');
-                    modalElement.style.display = 'block';
-                    document.body.classList.add('modal-open');
+                    console.log('Bootstrap modal shown');
+                    return;
+                } catch(e) {
+                    console.error('Bootstrap modal error:', e);
                 }
             }
+            
+            // Fallback: Direct show (works on all browsers)
+            console.log('Using fallback modal display');
+            
+            // Add backdrop first
+            let backdrop = document.querySelector('.modal-backdrop');
+            if (!backdrop) {
+                backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                backdrop.style.cssText = 'position: fixed; top: 0; left: 0; z-index: 999998; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.5);';
+                document.body.appendChild(backdrop);
+                
+                // Close on backdrop click/touch
+                backdrop.addEventListener('click', closeModal);
+                backdrop.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    closeModal();
+                }, { passive: false });
+            }
+            
+            // Show modal
+            modalElement.style.display = 'block';
+            modalElement.style.visibility = 'visible';
+            modalElement.style.opacity = '1';
+            modalElement.style.zIndex = '999999';
+            modalElement.style.position = 'fixed';
+            modalElement.classList.add('show');
+            document.body.classList.add('modal-open');
+            document.body.style.overflow = 'hidden';
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+            
+            // Force repaint
+            void modalElement.offsetHeight;
         }
 
         function closeModal() {
-            if (infoModal) {
-                infoModal.hide();
-            } else {
-                const modalElement = document.getElementById('infoModal');
-                if (modalElement) {
-                    modalElement.classList.remove('show');
-                    modalElement.style.display = 'none';
-                    document.body.classList.remove('modal-open');
+            console.log('closeModal called');
+            
+            // Try Bootstrap first
+            if (infoModal && typeof bootstrap !== 'undefined') {
+                try {
+                    infoModal.hide();
+                    return;
+                } catch(e) {
+                    console.error('Bootstrap modal hide error:', e);
                 }
+            }
+            
+            // Fallback: Direct hide
+            const modalElement = document.getElementById('infoModal');
+            if (modalElement) {
+                modalElement.style.display = 'none';
+                modalElement.style.visibility = 'hidden';
+                modalElement.style.opacity = '0';
+                modalElement.style.zIndex = '';
+                modalElement.classList.remove('show');
+            }
+            
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.body.style.width = '';
+            
+            // Remove backdrop
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.remove();
             }
         }
 
@@ -2054,77 +2149,151 @@
             }
         });
 
-        // Handle dropdown menus on mobile
-        document.addEventListener('DOMContentLoaded', function() {
-            // Add click handlers for dropdown items on mobile
-            function setupMobileMenu() {
-                if (window.innerWidth <= 768) {
-                    document.querySelectorAll('nav ul > li').forEach(li => {
-                        const hasSubmenu = li.querySelector('ul');
-                        if (hasSubmenu) {
-                            const link = li.querySelector('> a');
-                            if (link && !link.hasAttribute('data-mobile-handler')) {
-                                link.setAttribute('data-mobile-handler', 'true');
-                                link.addEventListener('click', function(e) {
-                                    e.preventDefault();
-                                    li.classList.toggle('active');
-                                });
-                            }
-                        }
-                    });
-                }
-            }
+        // Universal link handler function
+        function setupLinkHandlers() {
+            console.log('Setting up link handlers...');
             
-            setupMobileMenu();
-            
-            // Re-setup on window resize
-            let resizeTimer;
-            window.addEventListener('resize', function() {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(function() {
-                    setupMobileMenu();
-                }, 250);
-            });
-
             // Handle navigation links
-            document.querySelectorAll('nav a, .footer-section a, .footer-links a').forEach(link => {
-                link.addEventListener('click', function(e) {
+            const navLinks = document.querySelectorAll('nav a, .footer-section a, .footer-links a');
+            console.log('Found', navLinks.length, 'navigation links');
+            
+            navLinks.forEach((link, index) => {
+                // Remove any existing handlers to avoid duplicates
+                const newLink = link.cloneNode(true);
+                link.parentNode.replaceChild(newLink, link);
+                
+                newLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const href = this.getAttribute('href');
+                    console.log('Nav link clicked:', href, 'Index:', index);
                     if (href && href.startsWith('#')) {
-                        e.preventDefault();
                         const id = href.substring(1);
                         if (id) {
-                            openModal(id);
+                            console.log('Opening modal for:', id);
+                            setTimeout(() => openModal(id), 10);
                         }
                     }
-                });
+                }, true);
+                
+                // Touch event
+                newLink.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const href = this.getAttribute('href');
+                    console.log('Nav link touched:', href);
+                    if (href && href.startsWith('#')) {
+                        const id = href.substring(1);
+                        if (id) {
+                            console.log('Opening modal for (touch):', id);
+                            setTimeout(() => openModal(id), 10);
+                        }
+                    }
+                }, { passive: false, capture: true });
             });
 
             // Handle read more and download links
-            document.querySelectorAll('.read-more, .download-link').forEach(link => {
-                link.addEventListener('click', function(e) {
+            const actionLinks = document.querySelectorAll('.read-more, .download-link');
+            console.log('Found', actionLinks.length, 'action links');
+            
+            actionLinks.forEach((link, index) => {
+                const newLink = link.cloneNode(true);
+                link.parentNode.replaceChild(newLink, link);
+                
+                const handleAction = function(e) {
                     e.preventDefault();
-                    const parent = this.closest('.content-box, .news-item');
+                    e.stopPropagation();
+                    console.log('Action link clicked:', index);
+                    const parent = newLink.closest('.content-box, .news-item');
                     if (parent) {
                         const title = parent.querySelector('h2, .title')?.textContent || 'Information';
                         const content = parent.querySelector('p, .content')?.textContent || 'More information coming soon.';
                         document.getElementById('modalTitle').textContent = title;
                         document.getElementById('modalBody').innerHTML = '<p>' + content + '</p>';
-                        openModal('custom');
+                        setTimeout(() => openModal('custom'), 10);
                     }
-                });
+                };
+                
+                newLink.addEventListener('click', handleAction, true);
+                newLink.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAction.call(this, e);
+                }, { passive: false, capture: true });
             });
 
             // Handle social media links
-            document.querySelectorAll('.social-links a').forEach(link => {
-                link.addEventListener('click', function(e) {
+            const socialLinks = document.querySelectorAll('.social-links a');
+            console.log('Found', socialLinks.length, 'social links');
+            
+            socialLinks.forEach((link, index) => {
+                const newLink = link.cloneNode(true);
+                link.parentNode.replaceChild(newLink, link);
+                
+                const handleSocial = function(e) {
                     e.preventDefault();
-                    const platform = this.getAttribute('aria-label');
+                    e.stopPropagation();
+                    console.log('Social link clicked:', index);
+                    const platform = newLink.getAttribute('aria-label');
                     document.getElementById('modalTitle').textContent = platform;
                     document.getElementById('modalBody').innerHTML = '<p>Follow us on ' + platform + ' for the latest updates, news, and events.</p><p>Our ' + platform + ' page will be available soon.</p>';
-                    openModal('custom');
-                });
+                    setTimeout(() => openModal('custom'), 10);
+                };
+                
+                newLink.addEventListener('click', handleSocial, true);
+                newLink.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSocial.call(this, e);
+                }, { passive: false, capture: true });
             });
+        }
+
+        // Handle dropdown menus on mobile
+        function setupMobileMenu() {
+            if (window.innerWidth <= 768) {
+                document.querySelectorAll('nav ul > li').forEach(li => {
+                    const hasSubmenu = li.querySelector('ul');
+                    if (hasSubmenu) {
+                        const link = li.querySelector('> a');
+                        if (link && !link.hasAttribute('data-mobile-handler')) {
+                            link.setAttribute('data-mobile-handler', 'true');
+                            link.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                li.classList.toggle('active');
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
+        // Initialize everything when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded, setting up handlers');
+                setupLinkHandlers();
+                setupMobileMenu();
+            });
+        } else {
+            console.log('DOM already loaded, setting up handlers');
+            setupLinkHandlers();
+            setupMobileMenu();
+        }
+        
+        // Also try after a short delay to catch late-loading elements
+        setTimeout(function() {
+            console.log('Delayed setup');
+            setupLinkHandlers();
+        }, 500);
+        
+        // Re-setup on window resize
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(function() {
+                setupMobileMenu();
+            }, 250);
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
