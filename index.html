@@ -816,19 +816,29 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 99999;
+            z-index: 999999;
             left: 0;
             top: 0;
             width: 100%;
+            width: 100vw;
             height: 100%;
             height: 100vh;
             height: -webkit-fill-available;
+            min-height: 100vh;
             overflow: auto;
             -webkit-overflow-scrolling: touch;
             background-color: rgba(0,0,0,0.6);
             animation: fadeIn 0.3s;
             -webkit-backface-visibility: hidden;
             backface-visibility: hidden;
+            -webkit-transform: translateZ(0);
+            transform: translateZ(0);
+        }
+
+        .modal.show {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
 
         @keyframes fadeIn {
@@ -895,11 +905,18 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
         }
 
         .modal-close:hover {
             background: rgba(255,255,255,0.3);
             transform: rotate(90deg);
+        }
+
+        .modal-close:active {
+            background: rgba(255,255,255,0.4);
         }
 
         .modal-body {
@@ -1873,40 +1890,69 @@
 
         function openModal(id) {
             const modal = document.getElementById('infoModal');
-            const content = modalContent[id] || {
-                title: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
-                body: '<p>Information about ' + id.replace(/-/g, ' ') + ' will be available soon.</p>'
-            };
             
-            document.getElementById('modalTitle').textContent = content.title;
-            document.getElementById('modalBody').innerHTML = content.body;
+            // Handle custom modal (for read more, download links)
+            if (id === 'custom') {
+                // Content already set by the calling function
+            } else {
+                const content = modalContent[id] || {
+                    title: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
+                    body: '<p>Information about ' + id.replace(/-/g, ' ') + ' will be available soon.</p>'
+                };
+                
+                document.getElementById('modalTitle').textContent = content.title;
+                document.getElementById('modalBody').innerHTML = content.body;
+            }
             
             // Show modal with proper iOS Safari support
+            modal.classList.add('show');
             modal.style.display = 'block';
             modal.style.visibility = 'visible';
             modal.style.opacity = '1';
+            modal.style.zIndex = '999999';
+            modal.style.position = 'fixed';
+            modal.style.left = '0';
+            modal.style.top = '0';
             
             // Prevent body scroll on iOS Safari - improved method
-            const scrollY = window.scrollY;
+            const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop;
             document.body.style.position = 'fixed';
             document.body.style.top = `-${scrollY}px`;
             document.body.style.width = '100%';
             document.body.style.overflow = 'hidden';
+            document.body.style.height = '100%';
             document.body.classList.add('modal-open');
             
             // Store scroll position for restoration
             modal.dataset.scrollY = scrollY;
             
-            // Force repaint for iOS
+            // Force repaint for iOS - multiple methods
             void modal.offsetHeight;
+            modal.style.transform = 'translateZ(0)';
+            modal.style.webkitTransform = 'translateZ(0)';
+            modal.style.willChange = 'opacity';
+            
+            // Small delay to ensure rendering on mobile
+            requestAnimationFrame(function() {
+                modal.style.opacity = '1';
+                modal.style.display = 'block';
+            });
             
             // Focus on modal for accessibility
             modal.setAttribute('tabindex', '-1');
-            modal.focus();
+            try {
+                modal.focus();
+            } catch(e) {
+                // Focus might fail on some mobile browsers, that's okay
+            }
+            
+            // Debug log for mobile
+            console.log('Modal opened:', id, modal.style.display, modal.style.zIndex);
         }
 
         function closeModal() {
             const modal = document.getElementById('infoModal');
+            modal.classList.remove('show');
             modal.style.display = 'none';
             modal.style.visibility = 'hidden';
             modal.style.opacity = '0';
@@ -1917,6 +1963,7 @@
             document.body.style.top = '';
             document.body.style.width = '';
             document.body.style.overflow = '';
+            document.body.style.height = '';
             document.body.classList.remove('modal-open');
             
             // Restore scroll position
@@ -1927,12 +1974,20 @@
             modal.removeAttribute('tabindex');
         }
 
-        // Close modal when clicking outside - improved for touch devices
-        document.getElementById('infoModal').addEventListener('click', function(event) {
+        // Close modal when clicking/touching outside - improved for touch devices
+        const modal = document.getElementById('infoModal');
+        modal.addEventListener('click', function(event) {
             if (event.target === this) {
                 closeModal();
             }
         }, true);
+        
+        modal.addEventListener('touchend', function(event) {
+            if (event.target === this) {
+                event.preventDefault();
+                closeModal();
+            }
+        }, { passive: false });
 
         // Close modal with Escape key
         document.addEventListener('keydown', function(event) {
@@ -1940,6 +1995,13 @@
                 closeModal();
             }
         });
+
+        // Make close button work with touch events
+        document.querySelector('.modal-close').addEventListener('touchend', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeModal();
+        }, { passive: false });
 
         // Mobile menu toggle
         function toggleMenu() {
@@ -1992,46 +2054,68 @@
                 }, 250);
             });
 
-            // Handle navigation links
+            // Handle navigation links - with mobile touch support
             document.querySelectorAll('nav a, .footer-section a, .footer-links a').forEach(link => {
-                link.addEventListener('click', function(e) {
+                const handleNavLink = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const href = this.getAttribute('href');
                     if (href && href.startsWith('#')) {
-                        e.preventDefault();
                         const id = href.substring(1);
                         if (id) {
                             openModal(id);
                         }
                     }
-                });
+                };
+                
+                link.addEventListener('click', handleNavLink);
+                link.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleNavLink.call(this, e);
+                }, { passive: false });
             });
 
-            // Handle read more and download links
+            // Handle read more and download links - with mobile touch support
             document.querySelectorAll('.read-more, .download-link').forEach(link => {
-                link.addEventListener('click', function(e) {
+                const handleActionLink = function(e) {
                     e.preventDefault();
+                    e.stopPropagation();
                     const parent = this.closest('.content-box, .news-item');
                     if (parent) {
                         const title = parent.querySelector('h2, .title')?.textContent || 'Information';
                         const content = parent.querySelector('p, .content')?.textContent || 'More information coming soon.';
                         document.getElementById('modalTitle').textContent = title;
                         document.getElementById('modalBody').innerHTML = '<p>' + content + '</p>';
-                        document.getElementById('infoModal').style.display = 'block';
-                        document.body.style.overflow = 'hidden';
+                        openModal('custom');
                     }
-                });
+                };
+                
+                link.addEventListener('click', handleActionLink);
+                link.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleActionLink.call(this, e);
+                }, { passive: false });
             });
 
-            // Handle social media links
+            // Handle social media links - with mobile touch support
             document.querySelectorAll('.social-links a').forEach(link => {
-                link.addEventListener('click', function(e) {
+                const handleSocialLink = function(e) {
                     e.preventDefault();
+                    e.stopPropagation();
                     const platform = this.getAttribute('aria-label');
                     document.getElementById('modalTitle').textContent = platform;
                     document.getElementById('modalBody').innerHTML = '<p>Follow us on ' + platform + ' for the latest updates, news, and events.</p><p>Our ' + platform + ' page will be available soon.</p>';
-                    document.getElementById('infoModal').style.display = 'block';
-                    document.body.style.overflow = 'hidden';
-                });
+                    openModal('custom');
+                };
+                
+                link.addEventListener('click', handleSocialLink);
+                link.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSocialLink.call(this, e);
+                }, { passive: false });
             });
         });
     </script>
