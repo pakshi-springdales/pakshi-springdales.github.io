@@ -87,11 +87,38 @@
             z-index: 1000;
         }
 
+        .nav-container {
+            position: relative;
+        }
+
+        .menu-toggle {
+            display: none;
+            background: #1a5490;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 24px;
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            transition: background 0.3s;
+        }
+
+        .menu-toggle:hover {
+            background: #2c5aa0;
+        }
+
+        .menu-toggle i {
+            margin-right: 10px;
+        }
+
         nav ul {
             list-style: none;
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            margin: 0;
+            padding: 0;
         }
 
         nav ul li {
@@ -105,6 +132,7 @@
             padding: 18px 22px;
             transition: all 0.3s;
             font-weight: 500;
+            white-space: nowrap;
         }
 
         nav ul li a:hover {
@@ -124,10 +152,16 @@
             z-index: 1000;
             flex-direction: column;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            top: 100%;
+            left: 0;
         }
 
         nav ul ul li {
             width: 100%;
+        }
+
+        nav ul ul li a {
+            padding: 15px 25px;
         }
 
         /* Carousel */
@@ -762,14 +796,197 @@
             border-top: 1px solid rgba(255,255,255,0.2);
         }
 
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 0;
+            border: none;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #1a5490 0%, #2c5aa0 100%);
+            color: white;
+            padding: 25px 30px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            color: white;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 30px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .modal-body h3 {
+            color: #1a5490;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 22px;
+        }
+
+        .modal-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .modal-body p {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .modal-body ul {
+            margin-left: 30px;
+            margin-bottom: 20px;
+        }
+
+        .modal-body ul li {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .modal-body .info-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-left: 4px solid #1a5490;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .modal-body .contact-info {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .modal-body .contact-info p {
+            margin: 8px 0;
+        }
+
+        .modal-body .contact-info i {
+            color: #1a5490;
+            margin-right: 10px;
+            width: 20px;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
             nav ul {
+                display: none;
                 flex-direction: column;
+                width: 100%;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                max-height: calc(100vh - 60px);
+                overflow-y: auto;
+            }
+
+            nav ul.active {
+                display: flex;
+            }
+
+            nav ul li {
+                width: 100%;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+            }
+
+            nav ul li a {
+                padding: 15px 20px;
+                width: 100%;
+            }
+
+            nav ul li a:hover {
+                transform: none;
+                background: #1a5490;
             }
 
             nav ul ul {
                 position: static;
+                display: none;
+                background: rgba(0,0,0,0.2);
+                box-shadow: none;
+                min-width: 100%;
+                margin-left: 0;
+            }
+
+            nav ul li.active > ul {
+                display: block;
+            }
+
+            nav ul ul li a {
+                padding: 12px 35px;
+                font-size: 14px;
             }
 
             .content-grid {
@@ -832,10 +1049,35 @@
             .stat-item .number {
                 font-size: 32px;
             }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+
+            .modal-header h2 {
+                font-size: 22px;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Modal -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Information</h2>
+                <span class="modal-close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be inserted here -->
+            </div>
+        </div>
+    </div>
     <!-- Logo Section -->
     <div class="logo-section">
         <div class="logo-container">
@@ -850,7 +1092,11 @@
 
     <!-- Navigation -->
     <nav>
-        <ul>
+        <div class="nav-container">
+            <button class="menu-toggle" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i> Menu
+            </button>
+            <ul id="mainMenu">
             <li><a href="#home">Home</a></li>
             <li>
                 <a href="#about">About Us</a>
@@ -902,7 +1148,8 @@
             <li><a href="#results">Results</a></li>
             <li><a href="#contact">Contact Us</a></li>
             <li><a href="#cbse-corner">CBSE Corner</a></li>
-        </ul>
+            </ul>
+        </div>
     </nav>
 
     <!-- Image Carousel -->
@@ -914,15 +1161,6 @@
                 <div class="carousel-overlay">
                     <h3>Welcome to Pakshi's Springdales</h3>
                     <p>Excellence in Education Since Inception - Nurturing Future Leaders</p>
-                </div>
-            </div>
-            
-            <!-- Slide 2: Classroom Learning -->
-            <div class="carousel-slide">
-                <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&h=600&fit=crop" alt="Students engaged in classroom learning">
-                <div class="carousel-overlay">
-                    <h3>Interactive Learning Environment</h3>
-                    <p>State-of-the-art classrooms fostering creativity and critical thinking</p>
                 </div>
             </div>
             
@@ -1422,6 +1660,269 @@
 
         // Initialize
         updateCarousel();
+
+        // Modal functionality
+        const modalContent = {
+            'home': {
+                title: 'Home',
+                body: '<p>Welcome to Pakshi\'s Springdales Senior Secondary School - The Growing School of Bengaluru.</p><p>We are committed to providing excellence in education and nurturing future leaders through a comprehensive curriculum and holistic development approach.</p>'
+            },
+            'about': {
+                title: 'About Us',
+                body: '<p>Pakshi\'s Springdales Senior Secondary School is a successful, well-ordered and caring co-educational school. We are proud of our successes in academic and co-curricular fields and are committed to the highest levels of achievement for pupils of all abilities.</p><p>The school has excellent facilities and resources, with a wide focus for effective teaching and learning. We respect and value all faiths, beliefs and cultures.</p>'
+            },
+            'introduction': {
+                title: 'Introduction',
+                body: '<p>Pakshi\'s Springdales Senior Secondary School was established with a vision to provide quality education that combines academic excellence with character building.</p><p>Our school is affiliated to CBSE and follows a curriculum that promotes critical thinking, creativity, and holistic development of students.</p>'
+            },
+            'welcome-note': {
+                title: 'Welcome Note',
+                body: '<p>Welcome to Pakshi\'s Springdales! We are delighted to have you as part of our educational community.</p><p>Our mission is to create a nurturing environment where every student can discover their potential, develop their talents, and grow into responsible citizens of tomorrow.</p><p>We believe in fostering a love for learning, encouraging curiosity, and building strong character values in our students.</p>'
+            },
+            'education-methodology': {
+                title: 'Education Methodology',
+                body: '<h3>Our Teaching Approach</h3><p>Our education methodology comprises innovative principles and methods that encourage active participation, critical thinking, and collaborative learning.</p><ul><li>Activity-based learning for better understanding</li><li>Interactive classroom sessions</li><li>Project-based assignments</li><li>Regular assessments and feedback</li><li>Technology-integrated teaching</li><li>Individual attention to students</li></ul>'
+            },
+            'aims': {
+                title: 'Our Aims',
+                body: '<h3>School Objectives</h3><ul><li><strong>Academic Excellence:</strong> Achieve the highest standards in all academic areas</li><li><strong>Holistic Development:</strong> Support each student\'s spiritual, moral, and social development</li><li><strong>Talent Nurturing:</strong> Identify, nurture, and monitor individual talents and skills</li><li><strong>Safe Environment:</strong> Provide a secure, happy, and purposeful learning environment</li><li><strong>Character Building:</strong> Instill values of decency, good behavior, and self-discipline</li></ul>'
+            },
+            'campus': {
+                title: 'The Campus',
+                body: '<h3>Our Facilities</h3><p>Our school spans across six acres featuring:</p><ul><li>Grand building with airy and spacious classrooms</li><li>Modern science and computer laboratories</li><li>Extensive library with digital resources</li><li>Large playgrounds for basketball, football, and cricket</li><li>Scenic herbal garden</li><li>Music and art rooms</li><li>Well-equipped auditorium</li><li>Hygienic cafeteria</li></ul>'
+            },
+            'administration': {
+                title: 'Administration',
+                body: '<h3>School Administration</h3><p>Our administration team is dedicated to ensuring smooth operations and maintaining the highest standards of education.</p><p>The administrative structure includes:</p><ul><li>Principal\'s Office</li><li>Vice Principal</li><li>Academic Coordinators</li><li>Administrative Staff</li><li>Support Staff</li></ul>'
+            },
+            'director': {
+                title: 'About the Director',
+                body: '<h3>Director\'s Message</h3><p>Our Director brings years of experience in education and is committed to the vision of providing quality education to all students.</p><p>The Director oversees the overall functioning of the school and ensures that our educational goals are met while maintaining the highest standards of excellence.</p>'
+            },
+            'management': {
+                title: 'Management Committee',
+                body: '<h3>School Management</h3><p>The Management Committee consists of experienced educators and professionals who guide the school\'s policies and strategic direction.</p><p>The committee ensures:</p><ul><li>Quality education delivery</li><li>Infrastructure development</li><li>Student welfare</li><li>Staff development</li><li>Financial management</li></ul>'
+            },
+            'staff': {
+                title: 'Our Staff',
+                body: '<h3>Teaching and Support Staff</h3><p>We have a team of 150+ highly qualified and dedicated teachers who are committed to student success.</p><p>Our staff includes:</p><ul><li>Subject matter experts</li><li>Experienced educators</li><li>Support staff</li><li>Counselors</li><li>Sports coaches</li><li>Administrative personnel</li></ul>'
+            },
+            'book-list': {
+                title: 'Book List',
+                body: '<h3>Academic Books and Resources</h3><p>The book list for each class is available at the beginning of the academic year.</p><p>Books can be purchased from:</p><ul><li>School bookstore</li><li>Authorized vendors</li><li>Online platforms</li></ul><p>For the current academic year book list, please contact the school office or visit during office hours.</p>'
+            },
+            'academic': {
+                title: 'Academics',
+                body: '<h3>Academic Programs</h3><p>We offer comprehensive academic programs from Primary to Senior Secondary levels.</p><ul><li><strong>Primary (I-V):</strong> Foundation building with activity-based learning</li><li><strong>Middle School (VI-VIII):</strong> Enhanced curriculum with focus on core subjects</li><li><strong>Secondary (IX-X):</strong> CBSE curriculum with board exam preparation</li><li><strong>Senior Secondary (XI-XII):</strong> Science, Commerce, and Arts streams</li></ul>'
+            },
+            'calendar': {
+                title: 'Academic Calendar',
+                body: '<h3>Academic Year Schedule</h3><p>The academic calendar includes:</p><ul><li>Academic sessions and terms</li><li>Examination schedules</li><li>Holidays and breaks</li><li>Special events and activities</li><li>Parent-teacher meetings</li><li>Annual day and cultural events</li></ul><p>For the detailed academic calendar, please contact the school office.</p>'
+            },
+            'houses': {
+                title: 'School Houses',
+                body: '<h3>House System</h3><p>Our school follows a house system to promote healthy competition and team spirit among students.</p><p>The houses are:</p><ul><li><strong>House A:</strong> Encouraging leadership and excellence</li><li><strong>House B:</strong> Promoting creativity and innovation</li><li><strong>House C:</strong> Fostering teamwork and collaboration</li><li><strong>House D:</strong> Building character and values</li></ul><p>Students participate in various inter-house competitions throughout the year.</p>'
+            },
+            'alumni': {
+                title: 'Alumni',
+                body: '<h3>Our Alumni Network</h3><p>We are proud of our alumni who have excelled in various fields including:</p><ul><li>Engineering and Technology</li><li>Medicine and Healthcare</li><li>Business and Entrepreneurship</li><li>Arts and Literature</li><li>Sports and Athletics</li></ul><p>Our alumni network helps current students with mentorship and career guidance.</p>'
+            },
+            'alumni-report': {
+                title: 'Alumni Report',
+                body: '<h3>Alumni Achievements</h3><p>Our alumni have achieved remarkable success in their respective fields. The annual alumni report highlights:</p><ul><li>Career achievements</li><li>Higher education pursuits</li><li>Contributions to society</li><li>Alumni events and reunions</li></ul><p>For detailed alumni reports, please contact the alumni association.</p>'
+            },
+            'rte': {
+                title: 'Right to Education (R.T.E.)',
+                body: '<h3>RTE Admissions</h3><p>We are committed to providing education under the Right to Education Act.</p><p>RTE admissions are conducted as per government guidelines:</p><ul><li>25% seats reserved for RTE category</li><li>Online application process</li><li>Transparent admission procedure</li><li>No fees for RTE students</li></ul><p>For RTE admission details, please visit the school office or check our website for updates.</p>'
+            },
+            'awards': {
+                title: 'Awards and Recognition',
+                body: '<h3>School Achievements</h3><p>Our school has received numerous awards and recognition for excellence in education:</p><ul><li>Best School Award for Academic Excellence</li><li>Sports Achievement Awards</li><li>Cultural Program Recognition</li><li>Teacher Excellence Awards</li><li>Student Achievement Awards</li></ul><p>We celebrate achievements at our annual award ceremony.</p>'
+            },
+            'activities': {
+                title: 'Activities',
+                body: '<h3>Co-Curricular Activities</h3><p>We offer a wide range of activities to ensure holistic development:</p><ul><li><strong>Sports:</strong> Cricket, Football, Basketball, Table Tennis, Athletics</li><li><strong>Cultural:</strong> Music, Dance, Drama, Art, Debating</li><li><strong>Clubs:</strong> Science Club, Literary Club, Eco Club, Math Club</li><li><strong>Competitions:</strong> Inter-school and intra-school competitions</li><li><strong>Workshops:</strong> Skill development and career guidance</li></ul>'
+            },
+            'gallery': {
+                title: 'Gallery',
+                body: '<h3>Photo Gallery</h3><p>Our gallery showcases various school events and activities including:</p><ul><li>Annual Day celebrations</li><li>Sports events</li><li>Cultural programs</li><li>Academic achievements</li><li>Field trips and excursions</li><li>Special events</li></ul><p>Visit our gallery section to view photos and videos of school activities.</p>'
+            },
+            'photogallery': {
+                title: 'Photo Gallery',
+                body: '<h3>School Photos</h3><p>Browse through our collection of photographs capturing memorable moments from:</p><ul><li>Classroom activities</li><li>Sports competitions</li><li>Cultural events</li><li>Annual functions</li><li>Field trips</li><li>Special celebrations</li></ul>'
+            },
+            'mediagallery': {
+                title: 'Media Gallery',
+                body: '<h3>Media Coverage</h3><p>Our media gallery includes:</p><ul><li>News articles about school achievements</li><li>Press releases</li><li>Media coverage of events</li><li>School publications</li></ul>'
+            },
+            'videogallery': {
+                title: 'Video Gallery',
+                body: '<h3>Video Collection</h3><p>Watch videos of:</p><ul><li>Annual Day performances</li><li>Sports events</li><li>Cultural programs</li><li>School documentaries</li><li>Student achievements</li><li>Special events</li></ul>'
+            },
+            'online': {
+                title: 'Online Services',
+                body: '<h3>Digital Services</h3><p>We provide various online services for students and parents:</p><ul><li>Online fee payment</li><li>Student login portal</li><li>TC verification</li><li>Result viewing</li><li>Attendance tracking</li><li>Assignment submission</li></ul>'
+            },
+            'online-fee': {
+                title: 'Online Fee Payment',
+                body: '<h3>Fee Payment Portal</h3><div class="info-box"><p><strong>How to Pay Fees Online:</strong></p><ol><li>Visit the school website</li><li>Click on "Online Fee Payment"</li><li>Enter student details</li><li>Select payment method</li><li>Complete the transaction</li></ol></div><p>Accepted payment methods: Credit Card, Debit Card, Net Banking, UPI</p><p>For assistance, contact the accounts office.</p>'
+            },
+            'student-login': {
+                title: 'Student Login',
+                body: '<h3>Student Portal</h3><p>Students can access their portal to:</p><ul><li>View academic records</li><li>Check attendance</li><li>Download study materials</li><li>Submit assignments</li><li>View timetable</li><li>Access exam results</li></ul><div class="info-box"><p><strong>Login Credentials:</strong> Use your student ID and password provided by the school.</p></div>'
+            },
+            'tc-verification': {
+                title: 'TC Verification',
+                body: '<h3>Transfer Certificate Verification</h3><p>Verify Transfer Certificates issued by our school:</p><ul><li>Enter TC number</li><li>Enter student name</li><li>Enter issue date</li><li>View verification status</li></ul><p>For TC verification, please contact the school office with the TC details.</p>'
+            },
+            'results': {
+                title: 'Results',
+                body: '<h3>Examination Results</h3><p>View examination results for:</p><ul><li>Unit Tests</li><li>Mid-term Examinations</li><li>Annual Examinations</li><li>Board Examinations (Class X & XII)</li></ul><p>Results are published on the school website and can also be viewed at the school office.</p>'
+            },
+            'contact': {
+                title: 'Contact Us',
+                body: '<h3>Get In Touch</h3><div class="contact-info"><p><i class="fas fa-map-marker-alt"></i><strong>Address:</strong><br>Marathahalli, Bengaluru, Karnataka, India</p><p><i class="fas fa-phone"></i><strong>Phone:</strong><br>+91 - 80 - 2345 6789</p><p><i class="fas fa-envelope"></i><strong>Email:</strong><br>pakshisspringdales@gmail.com</p><p><i class="fas fa-clock"></i><strong>Office Hours:</strong><br>Monday to Friday: 8:00 AM - 4:00 PM<br>Saturday: 8:00 AM - 1:00 PM</p></div>'
+            },
+            'cbse-corner': {
+                title: 'CBSE Corner',
+                body: '<h3>CBSE Information</h3><p>As a CBSE affiliated school, we provide:</p><ul><li>CBSE curriculum and syllabus</li><li>Board examination information</li><li>CBSE circulars and updates</li><li>Sample papers and question banks</li><li>Examination schedule</li><li>Result information</li></ul><p>For CBSE-related queries, visit: <a href="https://cbse.gov.in" target="_blank">www.cbse.gov.in</a></p>'
+            },
+            'career': {
+                title: 'Career Opportunities',
+                body: '<h3>Join Our Team</h3><p>We are always looking for passionate educators and staff members.</p><p>Available positions:</p><ul><li>Subject Teachers</li><li>Physical Education Teachers</li><li>Administrative Staff</li><li>Support Staff</li></ul><p>Send your resume to: pakshisspringdales@gmail.com</p>'
+            },
+            'faqs': {
+                title: 'Frequently Asked Questions',
+                body: '<h3>Common Questions</h3><ul><li><strong>What are the admission procedures?</strong><br>Admissions are open for all classes. Please visit the school office or check our website for details.</li><li><strong>What is the fee structure?</strong><br>Fee structure varies by class. Contact the school office for detailed information.</li><li><strong>Does the school provide transport?</strong><br>Yes, we have a school bus service covering various routes.</li><li><strong>What are the school timings?</strong><br>School timings: 8:00 AM to 3:00 PM</li></ul>'
+            }
+        };
+
+        function openModal(id) {
+            const modal = document.getElementById('infoModal');
+            const content = modalContent[id] || {
+                title: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
+                body: '<p>Information about ' + id.replace(/-/g, ' ') + ' will be available soon.</p>'
+            };
+            
+            document.getElementById('modalTitle').textContent = content.title;
+            document.getElementById('modalBody').innerHTML = content.body;
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('infoModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('infoModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Mobile menu toggle
+        function toggleMenu() {
+            const menu = document.getElementById('mainMenu');
+            menu.classList.toggle('active');
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const nav = document.querySelector('nav');
+            const menu = document.getElementById('mainMenu');
+            const toggle = document.querySelector('.menu-toggle');
+            
+            if (window.innerWidth <= 768) {
+                if (!nav.contains(event.target) && menu.classList.contains('active')) {
+                    menu.classList.remove('active');
+                }
+            }
+        });
+
+        // Handle dropdown menus on mobile
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add click handlers for dropdown items on mobile
+            function setupMobileMenu() {
+                if (window.innerWidth <= 768) {
+                    document.querySelectorAll('nav ul > li').forEach(li => {
+                        const hasSubmenu = li.querySelector('ul');
+                        if (hasSubmenu) {
+                            const link = li.querySelector('> a');
+                            if (link && !link.hasAttribute('data-mobile-handler')) {
+                                link.setAttribute('data-mobile-handler', 'true');
+                                link.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    li.classList.toggle('active');
+                                });
+                            }
+                        }
+                    });
+                }
+            }
+            
+            setupMobileMenu();
+            
+            // Re-setup on window resize
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() {
+                    setupMobileMenu();
+                }, 250);
+            });
+
+            // Handle navigation links
+            document.querySelectorAll('nav a, .footer-section a, .footer-links a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && href.startsWith('#')) {
+                        e.preventDefault();
+                        const id = href.substring(1);
+                        if (id) {
+                            openModal(id);
+                        }
+                    }
+                });
+            });
+
+            // Handle read more and download links
+            document.querySelectorAll('.read-more, .download-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const parent = this.closest('.content-box, .news-item');
+                    if (parent) {
+                        const title = parent.querySelector('h2, .title')?.textContent || 'Information';
+                        const content = parent.querySelector('p, .content')?.textContent || 'More information coming soon.';
+                        document.getElementById('modalTitle').textContent = title;
+                        document.getElementById('modalBody').innerHTML = '<p>' + content + '</p>';
+                        document.getElementById('infoModal').style.display = 'block';
+                        document.body.style.overflow = 'hidden';
+                    }
+                });
+            });
+
+            // Handle social media links
+            document.querySelectorAll('.social-links a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const platform = this.getAttribute('aria-label');
+                    document.getElementById('modalTitle').textContent = platform;
+                    document.getElementById('modalBody').innerHTML = '<p>Follow us on ' + platform + ' for the latest updates, news, and events.</p><p>Our ' + platform + ' page will be available soon.</p>';
+                    document.getElementById('infoModal').style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+        });
     </script>
 </body>
 </html>
